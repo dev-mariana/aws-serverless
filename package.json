@@ -4,12 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "tsx watch src/server.ts"
+    "start:dev": "tsx watch src/server.ts",
+    "build": "tsup src --out-dir build",
+    "start": "node build/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.649.0",
+    "@aws-sdk/lib-dynamodb": "^3.649.0",
     "@fastify/aws-lambda": "^4.1.0",
     "dotenv": "^16.4.5",
     "fastify": "^4.28.1",
@@ -24,6 +28,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "prettier": "^3.3.3",
     "serverless-localstack": "^1.2.1",
+    "tsup": "^8.2.4",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4"
   }

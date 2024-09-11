@@ -4,8 +4,11 @@ provider:
   name: aws
   runtime: nodejs18.x
   stage: ${opt:stage, 'local'}
-  region: us-east-1
+  region: 'us-east-1'
   environment:
+    AWS_ACCESS_KEY_ID: ${env:AWS_ACCESS_KEY_ID}
+    AWS_SECRET_ACCESS_KEY: ${env:AWS_SECRET_ACCESS_KEY}
+    AWS_DEFAULT_REGION: ${env:AWS_DEFAULT_REGION}
     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
   iam:
     role:
@@ -19,34 +22,50 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}'
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:Query
-        - dynamodb:Scan
-        - dynamodb:GetItem
-        - dynamodb:PutItem
-        - dynamodb:UpdateItem
-        - dynamodb:DeleteItem
-      Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}'
 
 functions:
-  api:
-    handler: dist/handler.handler
+  create:
+    handler: build/app.app
     events:
       - http:
-          path: /api/
-          method: ANY
-      - http:
-          path: /{proxy+}
-          method: ANY
-    environment:
-      DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
+          path: users
+          method: post
+          cors: true
 
-plugins:
-  - serverless-localstack
+  # list:
+  #   handler: todos/list.list
+  #   events:
+  #     - http:
+  #         path: todos
+  #         method: get
+  #         cors: true
+
+  # get:
+  #   handler: todos/get.get
+  #   events:
+  #     - http:
+  #         path: todos/{id}
+  #         method: get
+  #         cors: true
+
+  # update:
+  #   handler: todos/update.update
+  #   events:
+  #     - http:
+  #         path: todos/{id}
+  #         method: put
+  #         cors: true
+
+  # delete:
+  #   handler: todos/delete.delete
+  #   events:
+  #     - http:
+  #         path: todos/{id}
+  #         method: delete
+  #         cors: true
 
 custom:
+  debug: true
   localstack:
     stages:
       - local
@@ -55,12 +74,12 @@ custom:
     autostart: true
     lambda:
       mountCode: True
-  serverless-offline:
-    httpPort: 3000
+    docker:
+      sudo: false
 
 resources:
   Resources:
-    Users:
+    TodosDynamoDbTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
         AttributeDefinitions:
@@ -69,15 +88,73 @@ resources:
         KeySchema:
           - AttributeName: id
             KeyType: HASH
-        BillingMode: PAY_PER_REQUEST
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
         TableName: ${self:provider.environment.DYNAMODB_TABLE}
+# provider:
+#   name: aws
+#   runtime: nodejs18.x
+#   stage: ${opt:stage, 'local'}
+#   region: us-east-1
+#   environment:
+#     NODE_ENV: ${opt:stage, 'development'}
+#     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+#   iamRoleStatements:
+#     - Effect: Allow
+#       Action:
+#         - dynamodb:Query
+#         - dynamodb:Scan
+#         - dynamodb:GetItem
+#         - dynamodb:PutItem
+#         - dynamodb:UpdateItem
+#         - dynamodb:DeleteItem
+#       Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}'
 
-package:
-  individually: true
-  exclude:
-    - node_modules/**
-    - .git/**
-    - .serverless/**
-  include:
-    - build/**/*.js
-    - src/**/*.ts
+# functions:
+#   create:
+#     handler: build/app
+#     events:
+#       - http:
+#           path: /users
+#           method: post
+#           cors: true
+
+# plugins:
+#   - serverless-localstack
+
+# custom:
+#   localstack:
+#     stages:
+#       - local
+#     host: http://localhost
+#     edgePort: 4566
+#     autostart: true
+#     lambda:
+#       mountCode: True
+#     docker:
+#       sudo: false
+
+# resources:
+#   Resources:
+#     Users:
+#       Type: 'AWS::DynamoDB::Table'
+#       Properties:
+#         AttributeDefinitions:
+#           - AttributeName: id
+#             AttributeType: S
+#         KeySchema:
+#           - AttributeName: id
+#             KeyType: HASH
+#         BillingMode: PAY_PER_REQUEST
+#         TableName: ${self:provider.environment.DYNAMODB_TABLE}
+
+# package:
+#   individually: true
+#   exclude:
+#     - node_modules/**
+#     - .git/**
+#     - .serverless/**
+#   include:
+#     - build/**/*.js
+#     - src/**/*.ts
