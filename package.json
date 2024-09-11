@@ -10,8 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fastify/aws-lambda": "^4.1.0",
     "dotenv": "^16.4.5",
     "fastify": "^4.28.1",
+    "serverless": "^4.2.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -21,6 +23,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "prettier": "^3.3.3",
+    "serverless-localstack": "^1.2.1",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4"
   }
